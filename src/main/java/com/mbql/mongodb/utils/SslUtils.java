@@ -8,8 +8,6 @@ import com.mongodb.MongoCompressor;
 import com.mongodb.MongoCredential;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.connection.ClusterConnectionMode;
-import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.netty.NettyStreamFactoryFactory;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
@@ -60,6 +58,7 @@ public class SslUtils {
 
     /**
      * MongoDB SSL / TLS 静态认证
+     * @return MongoClient
      */
     @SneakyThrows
     public MongoClient mongoSslStaticClient() {
@@ -70,7 +69,37 @@ public class SslUtils {
         System.setProperty("javax.net.ssl.trustStorePassword", properties.getCerts().getPassword());
         System.setProperty("javax.net.ssl.keyStore", keyStorePath);
         System.setProperty("javax.net.ssl.keyStorePassword", properties.getCerts().getPassword());
-        return MongoClients.create(properties.getUrl());
+        return MongoClients.create(getMongoStaticClientSettings());
+    }
+
+    /**
+     * SSL / TLS 静态客户端配置
+     * @return MongoClientSettings
+     */
+    public MongoClientSettings getMongoStaticClientSettings() {
+        // 设置 SSL / TLS 客户端配置
+        return MongoClientSettings.builder()
+                .applyToSslSettings(builder -> {
+                    builder.enabled(properties.isEnableSsl());
+                    builder.invalidHostNameAllowed(properties.isInvalidHostNameAllowed());
+                })
+                .applyConnectionString(new ConnectionString(properties.getUrl()))
+                .applyToClusterSettings(builder -> builder
+                        .mode(properties.getClusterConnectionMode())
+                        .requiredClusterType(properties.getClusterType())
+                        .requiredReplicaSetName(properties.getReplSetName()))
+                .compressorList(Lists.newArrayList(
+                        MongoCompressor.createZstdCompressor(),
+                        MongoCompressor.createSnappyCompressor(),
+                        MongoCompressor.createZlibCompressor()))
+                .applyToSocketSettings(builder -> builder
+                        .connectTimeout(properties.getConnectTimeout(), TimeUnit.SECONDS)
+                        .readTimeout(properties.getReadTimeout(), TimeUnit.SECONDS))
+                .applyToConnectionPoolSettings(builder -> builder
+                        .maxWaitTime(properties.getMaxWaitTime(), TimeUnit.MILLISECONDS)
+                        .maxSize(properties.getMaxSize()))
+                .credential(MongoCredential.createMongoX509Credential())
+                .build();
     }
 
     /**
@@ -78,9 +107,9 @@ public class SslUtils {
      *
      * @return MongoClientSettings
      */
-    public MongoClientSettings getMongoClientSettings() {
+    public MongoClientSettings getMongoDynamicClientSettings() {
         // 获取 SSL / TLS SslContext 上下文
-        SslContext sslContext = SslUtils.getSslContext(
+        SslContext sslContext = getSslContext(
                 properties.getCerts().getTrustStoreName(),
                 properties.getCerts().getKeyStoreName(),
                 properties.getCerts().getPassword(),
@@ -96,8 +125,8 @@ public class SslUtils {
                         .sslContext(sslContext).build())
                 .applyConnectionString(new ConnectionString(properties.getUrl()))
                 .applyToClusterSettings(builder -> builder
-                        .mode(ClusterConnectionMode.MULTIPLE)
-                        .requiredClusterType(ClusterType.REPLICA_SET)
+                        .mode(properties.getClusterConnectionMode())
+                        .requiredClusterType(properties.getClusterType())
                         .requiredReplicaSetName(properties.getReplSetName()))
                 .compressorList(Lists.newArrayList(
                         MongoCompressor.createZstdCompressor(),
@@ -110,7 +139,7 @@ public class SslUtils {
                         .maxWaitTime(properties.getMaxWaitTime(), TimeUnit.MILLISECONDS)
                         .maxConnecting(properties.getMaxConn()).maxSize(properties.getMaxSize())
                         .maxConnectionIdleTime(properties.getMaxConnectIdleTime(), TimeUnit.MILLISECONDS))
-                .credential(MongoCredential.createMongoX509Credential(properties.getAuthUserName()))
+                .credential(MongoCredential.createMongoX509Credential())
                 .build();
     }
 
@@ -124,7 +153,7 @@ public class SslUtils {
      * @return SslContext
      */
     @SneakyThrows
-    public static SslContext getSslContext(String trustStoreName, String keyStoreName, String password, boolean isEnableSsl) {
+    public SslContext getSslContext(String trustStoreName, String keyStoreName, String password, boolean isEnableSsl) {
         // 解析获取客户端认证证书路径
         String path = ResourceUtils.getURL("classpath:").getPath();
         String keyStorePath = path.concat(FIXED_MONGO_PATH).concat(keyStoreName);

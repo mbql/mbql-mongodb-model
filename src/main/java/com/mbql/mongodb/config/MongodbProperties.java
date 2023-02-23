@@ -1,9 +1,12 @@
 package com.mbql.mongodb.config;
 
+import com.mongodb.connection.ClusterConnectionMode;
+import com.mongodb.connection.ClusterType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ * Mongodb 相关配置属性
  * @author slp
  */
 @Data
@@ -19,6 +22,16 @@ public class MongodbProperties {
      * 副本集名称：默认 rs0
      */
     private String replSetName = "rs0";
+
+    /**
+     * 集群类型
+     */
+    private ClusterType clusterType = ClusterType.STANDALONE;
+
+    /**
+     * 集群连接模型
+     */
+    private ClusterConnectionMode clusterConnectionMode = ClusterConnectionMode.SINGLE;
 
     /**
      * 连接超时时间, 单位 / s
@@ -41,14 +54,14 @@ public class MongodbProperties {
     private long maxConnectIdleTime = 2000L;
 
     /**
-     * 连接池最大连接
+     * 连接池中最大并发连接数量
      */
     private int maxConn = Runtime.getRuntime().availableProcessors();
 
     /**
      * 连接池最大数量
      */
-    private int maxSize = maxConn;
+    private int maxSize = 200;
 
     /**
      * 是否开启 SSL / TLS

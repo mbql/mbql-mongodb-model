@@ -1,8 +1,8 @@
 package com.mbql.mongodb.config;
 
+import com.mbql.mongodb.utils.SslUtils;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mbql.mongodb.utils.SslUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * MongoDB 自动配置类
  * @author slp
  */
 @Slf4j
@@ -37,7 +38,7 @@ public class MongodbAutoConfig {
     @ConditionalOnProperty(prefix = "mongodb", name = "enable-ssl", havingValue = "true")
     public MongoClient mongoSslDynamicClient() {
         log.info("--------- MongoDB 使用动态 SSL / TLS 模式启动 ----------");
-        return MongoClients.create(new SslUtils(properties).getMongoClientSettings());
+        return MongoClients.create(new SslUtils(properties).getMongoDynamicClientSettings());
     }
 
     @Bean
