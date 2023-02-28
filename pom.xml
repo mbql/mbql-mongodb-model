@@ -5,7 +5,7 @@
 
     <groupId>io.github.mbql</groupId>
     <artifactId>mbql-mongodb-model</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>mbql-mongodb-model</name>
     <description>Fast automatic configuration and injection of MongoDB clients enhance the support for SSL/TLS authentication, and is compatible with the native mode, realizing simple and configurable MongoDB client authentication.</description>
     <url>https://github.com/mbql/mbql-mongodb-model</url>

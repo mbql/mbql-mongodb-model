@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Mongodb 相关配置属性
+ *
  * @author slp
  */
 @Data
@@ -19,9 +20,9 @@ public class MongodbProperties {
     private String url = "mongodb://localhost:27017/test";
 
     /**
-     * 副本集名称：默认 rs0
+     * 副本集名称
      */
-    private String replSetName = "rs0";
+    private String replSetName;
 
     /**
      * 集群类型
@@ -72,6 +73,11 @@ public class MongodbProperties {
      * SSL / TLS 开启是否使用静态模型
      */
     private boolean useStaticMode;
+
+    /**
+     * 配合开启 SSL / TLS 动态模式下生效, 默认 JDK 模式
+     */
+    private boolean useDynamicNettyMode;
 
     /**
      * 是否允许无效主机连接

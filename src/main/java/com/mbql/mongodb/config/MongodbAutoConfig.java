@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * MongoDB 自动配置类
+ *
  * @author slp
  */
 @Slf4j
@@ -38,7 +39,7 @@ public class MongodbAutoConfig {
     @ConditionalOnProperty(prefix = "mongodb", name = "enable-ssl", havingValue = "true")
     public MongoClient mongoSslDynamicClient() {
         log.info("--------- MongoDB 使用动态 SSL / TLS 模式启动 ----------");
-        return MongoClients.create(new SslUtils(properties).getMongoDynamicClientSettings());
+        return MongoClients.create(new SslUtils(properties).chooseMongoDynamicClientSettings());
     }
 
     @Bean

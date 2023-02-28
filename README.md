@@ -13,7 +13,7 @@ MongoDB 客户端组件依赖如下：
 <dependency>
     <groupId>io.github.mbql</groupId>
     <artifactId>mbql-mongodb-model</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
